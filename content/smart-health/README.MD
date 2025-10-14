@@ -1,1 +1,1 @@
-# Smart Health - Application
+# Smart Health - Application - Jhoan Smith Araque Jaimes
