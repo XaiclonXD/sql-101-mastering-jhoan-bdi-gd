@@ -1,0 +1,183 @@
+erDiagram
+    patients {
+        int patient_id PK
+        string first_name
+        string middle_name
+        string last_name
+        string maternal_surname
+        date birth_date
+        char sex
+        string email
+        date registration_date
+        boolean active
+    }
+
+    patient_documents {
+        int document_type_id FK
+        string document_number
+        string issuing_country
+        date issue_date
+        int patient_id FK 
+    }
+
+    patient_addresses {
+        string address_type
+        string street_address
+        string municipality
+        string department
+        string country_code
+        string latitude
+        string longitude
+        string postal_code
+        int patient_id FK 
+    }
+
+    patient_phones {
+        string phone_type
+        string phone_number
+        boolean primary
+        int patient_id FK 
+    }
+
+    emergency_contacts {
+        string name
+        string relationship
+        string phone
+        string email
+        string instructions
+        int patient_id FK 
+    }
+
+    doctors {
+        int doctor_id PK
+        string internal_code
+        string license_number
+        string first_name
+        string last_name
+        string professional_email
+        date hospital_entry_date
+        boolean active
+    }
+
+    doctor_specialties {
+        int specialty_id PK
+        int doctor_id FK
+    }
+
+    doctor_phones {
+        string phone_type
+        string phone_number
+        int doctor_id FK 
+    }
+
+    doctor_addresses {
+        string address_type
+        string department
+        string municipality
+        string address_text
+        string service_hours
+        int doctor_id FK
+    }
+
+    doctor_schedules {
+        string weekday
+        timestamp start_time
+        timestamp end_time
+        string modality
+        int doctor_id FK
+    }
+
+    appointments {
+        int appointment_id PK
+        date date
+        time start_time
+        time end_time
+        string care_type
+        string status
+        string room_id
+        string reason
+        string created_by
+        date creation_date
+        int patient_id FK
+        int doctor_id FK
+    }
+
+    medical_records {
+        int record_id PK
+        datetime record_datetime
+        string record_type
+        string summary_text
+        json structured_summary
+        int doctor_id FK
+        int patient_id FK
+    }
+
+    prescriptions {
+        int prescription_id PK
+        string dosage
+        string frequency
+        string duration
+        string notes
+        int record_id FK
+    }
+
+    vital_signs {
+        int vital_sign_id PK
+        string vital_type
+        string value
+        string unit
+        datetime record_datetime
+        int record_id FK
+    }
+
+    diagnoses {
+        int diagnosis_id PK
+        string icd_code
+        string description
+        int record_id FK 
+    }
+
+    medications {
+        int medication_id PK
+        string atc_code
+        string trade_name
+        string active_principle
+        string presentation
+        int prescription_id FK
+    }
+
+    insurers {
+        int insurer_id PK
+        string name
+        string contact
+    }
+
+    insurance_policies {
+        int policy_id PK
+        string policy_number
+        string coverage_summary
+        date start_date
+        date end_date
+        string status
+        int patient_id FK
+        int insurer_id FK
+    }
+
+    patients ||--o{ patient_documents : has
+    patients ||--o{ patient_addresses : has
+    patients ||--o{ patient_phones : has
+    patients ||--o{ emergency_contacts : has
+    patients ||--o{ medical_records : owns
+    patients ||--o{ insurance_policies : has
+    doctors ||--o{ appointments : attends
+    patients ||--o{ appointments : schedules
+    doctors ||--o{ medical_records : registers
+    doctors ||--o{ doctor_specialties : belongs
+    doctors ||--o{ doctor_phones : has
+    doctors ||--o{ doctor_addresses : includes
+    doctors ||--o{ doctor_schedules : has
+    insurers ||--o{ insurance_policies : provides
+    medical_records ||--o{ prescriptions : contains
+    medical_records ||--o{ vital_signs : contains
+    medical_records ||--o{ diagnoses : contains
+    prescriptions ||--o{ medications : contains
