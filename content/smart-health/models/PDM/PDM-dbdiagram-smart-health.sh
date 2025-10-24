@@ -1,165 +1,265 @@
-// Use DBML to define your database structure
-// Docs: https://dbml.dbdiagram.io/docs
+// ============================================
+// SMART HEALTH DATABASE - Academic Version
+// Database: PostgreSQL
+// Normalization: 4NF
+// ============================================
+
+// ============================================
+// MÓDULO GEOGRÁFICO
+// ============================================
+
+Table departments {
+  department_code varchar(10) [primary key]
+  department_name varchar(100) [not null]
+}
+
+Table municipalities {
+  municipality_code varchar(10) [primary key]
+  municipality_name varchar(100) [not null]
+  department_code varchar(10) [not null]
+}
+
+Table addresses {
+  address_id serial [primary key]
+  municipality_code varchar(10) [not null]
+  address_line varchar(200) [not null]
+  postal_code varchar(20)
+  active boolean [default: true]
+}
+
+// ============================================
+// MÓDULO DE PACIENTES
+// ============================================
 
 Table patients {
-  patient_id int [pk]
-  first_name varchar
-  middle_name varchar
-  last_name varchar
-  maternal_surname varchar
-  birth_date date
-  sex char
-  email varchar
-  registration_date date
-  active boolean
+  patient_id serial [primary key]
+  first_name varchar(50) [not null]
+  middle_name varchar(50)
+  first_surname varchar(50) [not null]
+  second_surname varchar(50)
+  birth_date date [not null]
+  gender char(1) [not null]
+  email varchar(100) [unique]
+  registration_date timestamp [default: `CURRENT_TIMESTAMP`]
+  active boolean [default: true]
 }
 
 Table patient_documents {
-  document_number varchar
-  issuing_country varchar
+  patient_document_id serial [primary key]
+  patient_id int [not null]
+  document_type_id int [not null]
+  document_number varchar(50) [not null]
+  issuing_country char(3) [not null]
   issue_date date
-  patient_id int [ref: > patients.patient_id]
-}
-
-Table patient_addresses {
-  address_type varchar
-  street_address varchar
-  municipality varchar
-  department varchar
-  country_code varchar
-  latitude varchar
-  longitude varchar
-  postal_code varchar
-  patient_id int [ref: > patients.patient_id]
 }
 
 Table patient_phones {
-  phone_type varchar
-  phone_number varchar
-  primary boolean
-  patient_id int [ref: > patients.patient_id]
+  patient_phone_id serial [primary key]
+  patient_id int [not null]
+  phone_type varchar(20) [not null]
+  phone_number varchar(20) [not null]
+  is_primary boolean [default: false]
 }
 
-Table emergency_contacts {
-  name varchar
-  relationship varchar
-  phone varchar
-  email varchar
-  instructions varchar
-  patient_id int [ref: > patients.patient_id]
+Table patient_addresses {
+  patient_address_id serial [primary key]
+  patient_id int [not null]
+  address_id int [not null]
+  address_type varchar(20) [not null]
+  is_primary boolean [default: false]
+  valid_from date
+  valid_to date
 }
+
+Table patient_allergies {
+  patient_allergy_id serial [primary key]
+  patient_id int [not null]
+  medication_id int [not null]
+  severity varchar(20) [not null]
+  reaction_description text
+  diagnosed_date date
+}
+
+// ============================================
+// MÓDULO DE PROFESIONALES
+// ============================================
 
 Table doctors {
-  doctor_id int [pk]
-  internal_code varchar
-  license_number varchar
-  first_name varchar
-  last_name varchar
-  professional_email varchar
-  hospital_entry_date date
-  active boolean
+  doctor_id serial [primary key]
+  internal_code varchar(20) [unique, not null]
+  medical_license_number varchar(50) [unique, not null]
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  professional_email varchar(100) [unique, not null]
+  phone_number varchar(20) [not null]
+  hospital_admission_date date [not null]
+  active boolean [default: true]
 }
 
 Table doctor_specialties {
-  specialty_id int [pk]
-  doctor_id int [ref: > doctors.doctor_id]
-}
-
-Table doctor_phones {
-  phone_type varchar
-  phone_number varchar
-  doctor_id int [ref: > doctors.doctor_id]
+  doctor_specialty_id serial [primary key]
+  doctor_id int [not null]
+  specialty_id int [not null]
+  certification_date date
+  is_active boolean [default: true]
 }
 
 Table doctor_addresses {
-  address_type varchar
-  department varchar
-  municipality varchar
-  address_text varchar
-  service_hours varchar
-  doctor_id int [ref: > doctors.doctor_id]
+  doctor_address_id serial [primary key]
+  doctor_id int [not null]
+  address_id int [not null]
+  address_type varchar(20) [not null]
+  office_hours text
+  is_primary boolean [default: false]
 }
 
-Table doctor_schedules {
-  weekday varchar
-  start_time timestamp
-  end_time timestamp
-  modality varchar
-  doctor_id int [ref: > doctors.doctor_id]
+// ============================================
+// MÓDULO DE ATENCIÓN
+// ============================================
+
+Table rooms {
+  room_id serial [primary key]
+  room_name varchar(50) [unique, not null]
+  room_type varchar(50) [not null]
+  capacity int
+  location varchar(100)
+  active boolean [default: true]
 }
 
 Table appointments {
-  appointment_id int [pk]
-  date date
-  start_time time
-  end_time time
-  care_type varchar
-  status varchar
-  room_id varchar
-  reason varchar
-  created_by varchar
-  creation_date date
-  patient_id int [ref: > patients.patient_id]
-  doctor_id int [ref: > doctors.doctor_id]
+  appointment_id serial [primary key]
+  patient_id int [not null]
+  doctor_id int [not null]
+  room_id int
+  appointment_date date [not null]
+  start_time time [not null]
+  end_time time [not null]
+  appointment_type varchar(50) [not null]
+  status varchar(20) [not null]
+  reason text
+  creation_date timestamp [default: `CURRENT_TIMESTAMP`]
 }
 
 Table medical_records {
-  record_id int [pk]
-  record_datetime datetime
-  record_type varchar
-  summary_text varchar
-  structured_summary text
-  doctor_id int [ref: > doctors.doctor_id]
-  patient_id int [ref: > patients.patient_id]
+  medical_record_id serial [primary key]
+  patient_id int [not null]
+  doctor_id int [not null]
+  primary_diagnosis_id int
+  registration_datetime timestamp [default: `CURRENT_TIMESTAMP`]
+  record_type varchar(50) [not null]
+  summary_text text [not null]
+  vital_signs text
+}
+
+Table record_diagnoses {
+  record_diagnosis_id serial [primary key]
+  medical_record_id int [not null]
+  diagnosis_id int [not null]
+  diagnosis_type varchar(20) [not null]
+  note text
 }
 
 Table prescriptions {
-  prescription_id int [pk]
-  dosage varchar
-  frequency varchar
-  duration varchar
-  notes varchar
-  record_id int [ref: > medical_records.record_id]
+  prescription_id serial [primary key]
+  medical_record_id int [not null]
+  medication_id int [not null]
+  dosage varchar(100) [not null]
+  frequency varchar(100) [not null]
+  duration varchar(50) [not null]
+  instruction text
+  prescription_date timestamp [default: `CURRENT_TIMESTAMP`]
+  alert_generated boolean [default: false]
 }
 
-Table vital_signs {
-  vital_sign_id int [pk]
-  vital_type varchar
-  value varchar
-  unit varchar
-  record_datetime datetime
-  record_id int [ref: > medical_records.record_id]
+// ============================================
+// MÓDULO DE CATÁLOGOS
+// ============================================
+
+Table document_types {
+  document_type_id serial [primary key]
+  type_name varchar(50) [unique, not null]
+  type_code varchar(10) [unique, not null]
+  description text
+}
+
+Table specialties {
+  specialty_id serial [primary key]
+  specialty_name varchar(100) [unique, not null]
+  description text
 }
 
 Table diagnoses {
-  diagnosis_id int [pk]
-  icd_code varchar
-  description varchar
-  record_id int [ref: > medical_records.record_id]
+  diagnosis_id serial [primary key]
+  icd_code varchar(10) [unique, not null]
+  description varchar(500) [not null]
 }
 
 Table medications {
-  medication_id int [pk]
-  atc_code varchar
-  trade_name varchar
-  active_principle varchar
-  presentation varchar
-  prescription_id int [ref: > prescriptions.prescription_id]
+  medication_id serial [primary key]
+  atc_code varchar(10) [unique, not null]
+  commercial_name varchar(200) [not null]
+  active_ingredient varchar(200) [not null]
+  presentation varchar(100) [not null]
 }
 
-Table insurers {
-  insurer_id int [pk]
-  name varchar
-  contact varchar
-}
+// ============================================
+// RELACIONES - MÓDULO GEOGRÁFICO
+// ============================================
 
-Table insurance_policies {
-  policy_id int [pk]
-  policy_number varchar
-  coverage_summary varchar
-  start_date date
-  end_date date
-  status varchar
-  patient_id int [ref: > patients.patient_id]
-  insurer_id int [ref: > insurers.insurer_id]
-}
+Ref: municipalities.department_code > departments.department_code [delete: restrict, update: cascade]
+
+Ref: addresses.municipality_code > municipalities.municipality_code [delete: restrict, update: cascade]
+
+Ref: patient_addresses.address_id > addresses.address_id [delete: cascade, update: cascade]
+
+Ref: doctor_addresses.address_id > addresses.address_id [delete: cascade, update: cascade]
+
+// ============================================
+// RELACIONES - MÓDULO PACIENTES
+// ============================================
+
+Ref: patient_documents.patient_id > patients.patient_id [delete: cascade, update: cascade]
+
+Ref: patient_documents.document_type_id > document_types.document_type_id [delete: restrict, update: cascade]
+
+Ref: patient_phones.patient_id > patients.patient_id [delete: cascade, update: cascade]
+
+Ref: patient_addresses.patient_id > patients.patient_id [delete: cascade, update: cascade]
+
+Ref: patient_allergies.patient_id > patients.patient_id [delete: cascade, update: cascade]
+
+Ref: patient_allergies.medication_id > medications.medication_id [delete: restrict, update: cascade]
+
+// ============================================
+// RELACIONES - MÓDULO PROFESIONALES
+// ============================================
+
+Ref: doctor_specialties.doctor_id > doctors.doctor_id [delete: cascade, update: cascade]
+
+Ref: doctor_specialties.specialty_id > specialties.specialty_id [delete: restrict, update: cascade]
+
+Ref: doctor_addresses.doctor_id > doctors.doctor_id [delete: cascade, update: cascade]
+
+// ============================================
+// RELACIONES - MÓDULO ATENCIÓN
+// ============================================
+
+Ref: appointments.patient_id > patients.patient_id [delete: restrict, update: cascade]
+
+Ref: appointments.doctor_id > doctors.doctor_id [delete: restrict, update: cascade]
+
+Ref: appointments.room_id > rooms.room_id [delete: set null, update: cascade]
+
+Ref: medical_records.patient_id > patients.patient_id [delete: restrict, update: cascade]
+
+Ref: medical_records.doctor_id > doctors.doctor_id [delete: restrict, update: cascade]
+
+Ref: medical_records.primary_diagnosis_id > diagnoses.diagnosis_id [delete: set null, update: cascade]
+
+Ref: record_diagnoses.medical_record_id > medical_records.medical_record_id [delete: cascade, update: cascade]
+
+Ref: record_diagnoses.diagnosis_id > diagnoses.diagnosis_id [delete: restrict, update: cascade]
+
+Ref: prescriptions.medical_record_id > medical_records.medical_record_id [delete: cascade, update: cascade]
+
+Ref: prescriptions.medication_id > medications.medication_id [delete: restrict, update: cascade]
