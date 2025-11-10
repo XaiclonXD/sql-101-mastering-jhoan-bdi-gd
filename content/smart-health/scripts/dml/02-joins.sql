@@ -257,7 +257,7 @@ SELECT
     T1.appointment_id AS codigo_cita,
     T1.appointment_date AS fecha_cita,
     T1.status AS estado,
-    T2.first_name || ' ' || T2.first_surname AS medico
+    CONCAT (T2.first_name ,T2.first_surname) AS medico
 
 FROM smart_health.appointments T1
 INNER JOIN smart_health.doctors T2
@@ -306,3 +306,6 @@ SELECT
 FROM smart_health.patients
 GROUP BY blood_type
 ORDER BY count DESC;
+
+
+

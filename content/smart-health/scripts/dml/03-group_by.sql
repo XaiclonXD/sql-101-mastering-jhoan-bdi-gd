@@ -138,3 +138,61 @@ ORDER BY T1.status ASC, total_citas DESC;
 -- ##################################################
 -- #                 END OF QUERIES                 #
 -- ##################################################
+
+--TOP 5 PERSONAS CON NOMBRES MAS LARGOS
+SELECT
+    first_name,
+    LENGTH)(first_name) as total_length
+FROM smart_health.patients
+GROUP BY first_name
+ORDER BY total_length DESC
+LIMIT 5;
+
+
+SELECT
+    first_name,
+    LENGTH(first_name) as total_length
+    
+FROM smart_health.patients
+GROUP BY first_name
+HAVING ROUND(AVG(LENGTH(first_name)))  < LENGTH(first_name)
+ORDER BY total_length ASC
+LIMIT 10;
+
+SELECT email ,
+    SPLIT_PART (email, '@',2) AS domain_email
+FROM smart_health.patients
+LIMIT 5;
+
+--02 pal parcial 
+--MUESTREME LOS DOMINIOS Y ME HAGA EL CONTEO DE LOS DOMINIOS
+SELECT
+    SPLIT_PART (email, '@',2) AS domain_email,
+    COUNT (*) AS total_emails,
+FROM smart_health.patients
+GROUP BY domain_email
+ORDER BY total_emails DESC;
+
+
+(
+SELECT
+    SPLIT_PART (email, '@',2) AS domain_email,
+    COUNT (*) AS total_emails,
+FROM smart_health.patients
+WHERE  SPLIT_PART (email, '@',2) IN  ('hotmail.com','gmail.com','yahoo.com')
+GROUP BY domain_email
+ORDER BY total_emails DESC;
+)sq;
+
+
+--nombre completo mas largo de los pacientes
+
+SELECT
+    first_name,
+    LENGTH(first_name) as total_length
+    
+FROM smart_health.patients
+WHERE 
+GROUP BY first_name
+ORDER BY total_length ASC
+LIMIT 10;
